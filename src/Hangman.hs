@@ -2,13 +2,28 @@ import System.IO
 import System.Directory
 import System.Random
 import Data.Char
+import Data.List
 
+hangmanImages :: [[String]]
+hangmanImages =
+    --map (++ ["\n"])
+    transpose 
+    [ [ "   ", " O ", " O ", " O ", " O " , "_O " , "_O_"  ] , 
+    [ "   ", "   ", " | ", " | ", " | " , " | " , " | "  ], 
+    [ "   ", "   ", "   ", "/  ", "/ \\", "/ \\", "/ \\" ]]
+
+putState :: [String] -> IO ()
+putState = mapM_ putStrLn
+
+len = length hangmanImages
+
+getState n = (!! (len - n - 1))
 main :: IO ()
 main = do 
   putStrLn "Hangman"
   word <- getWordFromFile "animals.txt"
   let puzzle = assoc word
-  loop puzzle (length word)
+  loop puzzle (len - 1) --(length word)
 
 getWordFromFile :: FilePath -> IO String
 getWordFromFile fileName = do
@@ -37,9 +52,14 @@ makeGuess wordMap word letter guesses
     | otherwise = loop wordMap (guesses-1)
 
 loop :: [(Char, Char)] -> Int -> IO ()
-loop puzzle 0 = putStrLn ("You've lost, the word was " ++ map fst puzzle)
+loop puzzle 0 = 
+    (putState $ getState 0 hangmanImages)
+    >>
+    putStrLn ("You've lost, the word was " ++ map fst puzzle)
 loop puzzle n = do
   let current = map snd puzzle
+  putStrLn "Puzzle is: "
+  putState $ getState n hangmanImages
   putStrLn ("Current guesses: " ++ current)
   putStrLn ("numGuesses = " ++ show n) 
   putStrLn "Next guess: "
